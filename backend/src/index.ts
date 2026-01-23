@@ -140,6 +140,53 @@ app.delete("/api/settings/:uid", async (req, res) => {
     }
 });
 
+app.get("/api/settings", async (req, res) => {
+    const DEFAULT_LIMIT = 20;
+    const MAX_LIMIT = 100;
+
+    const rawLimit = req.query.limit;
+    const rawOffset = req.query.offset;
+
+    const limitStr = rawLimit === undefined ? String(DEFAULT_LIMIT) : String(rawLimit);
+    const offsetStr = rawOffset === undefined ? "0" : String(rawOffset);
+
+    const limitNum = Number(limitStr);
+    const offsetNum = Number(offsetStr);
+
+    const isInt = (n: number) => Number.isInteger(n);
+
+    if (!isInt(limitNum) || !isInt(offsetNum)) {
+        return res.status(400).json({ error: "limit and offset must be integers" });
+    }
+    if (limitNum < 0 || offsetNum < 0) {
+        return res.status(400).json({ error: "limit and offset must be non-negative" });
+    }
+
+    const limit = Math.min(limitNum, MAX_LIMIT);
+    const offset = offsetNum;
+
+    try {
+        const itemsResult = await pool.query(
+            `SELECT uid, settings
+       FROM settings
+       ORDER BY created_at DESC, uid DESC
+       LIMIT $1 OFFSET $2`,
+            [limit, offset]
+        );
+
+        const totalResult = await pool.query(`SELECT COUNT(*)::int AS total FROM settings`);
+        const total = totalResult.rows[0].total as number;
+
+        return res.status(200).json({
+            items: itemsResult.rows,
+            page: { limit, offset, total },
+        });
+    } catch (err) {
+        console.error("LIST failed:", err);
+        return res.status(500).json({ error: "Failed to list settings" });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Backend listening on http://localhost:${PORT}`);
 });
