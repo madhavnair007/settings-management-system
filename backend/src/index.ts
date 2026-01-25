@@ -187,6 +187,6 @@ app.get("/api/settings", async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Backend listening on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Backend listening on ${PORT}`);
 });

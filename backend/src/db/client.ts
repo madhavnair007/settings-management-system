@@ -7,5 +7,5 @@ if (!databaseUrl) {
 }
 
 export const pool = new Pool({
-    connectionString: databaseUrl,
+    connectionString: process.env.DATABASE_URL,
 });
