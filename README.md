@@ -40,7 +40,7 @@ This project implements a RESTful API and frontend UI for managing arbitrary JSO
 
 ---
 
-## How to Run (Recommended)
+## How to Run
 
 ### Prerequisites
 - Docker
@@ -49,8 +49,6 @@ This project implements a RESTful API and frontend UI for managing arbitrary JSO
 ### Start the Full Stack
 
 From the project root:
-
-<!-- ```bash -->
 docker compose up --build
 
 Open the UI
@@ -59,85 +57,63 @@ http://localhost:8080
 
 The frontend is served by nginx and proxies /api/* requests to the backend.
 
-First startup may take ~10–20 seconds while Postgres initializes.
-
-How to run locally (optional)
-Backend
+### How to run locally (optional)
+#### Backend
 cd backend
 npm install
 npm run dev
 
-
 Runs on:
-
 http://localhost:3000
 
-Frontend
+#### Frontend
 cd frontend
 npm install
 npm run dev
 
-
 Runs on:
-
 http://localhost:5173
 
 
 In local development, the frontend uses a proxy to reach the backend.
 
-API overview
-Create settings
-
-POST /api/settings
-
+## API overview
+### Create settings
+#### POST /api/settings
 Request body:
-
 {
   "example": true
 }
 
-
 Response:
-
 {
   "uid": "uuid",
   "settings": { "example": true }
 }
 
-Get settings by UID
 
-GET /api/settings/:uid
-
+### Get settings by UID
+#### GET /api/settings/:uid
 Returns 404 if not found
 
-Update settings
 
-PUT /api/settings/:uid
-
+### Update settings
+#### PUT /api/settings/:uid
 Replaces the entire settings object
-
 Returns 404 if not found
 
-Delete settings
 
-DELETE /api/settings/:uid
-
+### Delete settings
+#### DELETE /api/settings/:uid
 Idempotent
-
 Returns 204 No Content
 
-List settings (pagination)
-
-GET /api/settings?limit=&offset=
-
+### List settings (pagination)
+#### GET /api/settings?limit=&offset=
 Defaults:
-
-limit = 20
-
-offset = 0
-
+- limit = 20
+- offset = 0
 Response:
-
 {
   "items": [
     { "uid": "...", "settings": { ... } }
@@ -149,62 +125,25 @@ Response:
   }
 }
 
+- Stable ordering: created_at DESC, uid DESC
+- Invalid params return 400
+- Large offsets return empty lists (not errors)
 
-Stable ordering: created_at DESC, uid DESC
-
-Invalid params return 400
-
-Large offsets return empty lists (not errors)
-
-Design decisions
-
-Postgres JSONB
+### Design decisions
+#### Postgres JSONB
 Enables fully schemaless storage while retaining strong durability and query support.
 
-limit/offset pagination
+#### limit/offset pagination
 Simple, predictable pagination that works cleanly with UI controls.
 
-Stable ordering
+#### Stable ordering
 Prevents duplicate or missing rows during pagination.
 
-Server-generated UUIDs
+#### Server-generated UUIDs
 Avoids client trust issues and guarantees uniqueness.
 
-Validation
+#### Validation
 Settings must be a valid JSON object (arrays and primitives rejected).
 
-Nginx API proxy
+#### Nginx API proxy
 Frontend calls /api/*, avoiding CORS issues and hardcoded backend URLs.
-
-Testing
-
-No automated tests were included.
-
-Manual test checklist
-
-After startup:
-
-Create a new settings JSON in the UI
-
-Verify it appears in the list
-
-Edit and save the settings
-
-Delete the settings
-
-Restart containers and confirm data persists
-
-Sample curl
-curl -X POST http://localhost:8080/api/settings \
-  -H "Content-Type: application/json" \
-  -d '{"example": true}'
-
-Notes for reviewers
-
-Entire system runs with one Docker command
-
-No local Postgres or Node setup required
-
-Frontend ↔ backend communication matches production patterns
-
-Designed for clarity and correctness over unnecessary complexity
