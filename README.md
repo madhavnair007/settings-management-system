@@ -111,8 +111,10 @@ Returns 204 No Content
 ### List settings (pagination)
 #### GET /api/settings?limit=&offset=
 Defaults:
-- limit = 20
-- offset = 0
+limit = 20
+offset = 0
+
+
 Response:
 {
   "items": [
